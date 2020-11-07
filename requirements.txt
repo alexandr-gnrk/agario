@@ -1,0 +1,4 @@
+loguru==0.5.3
+pygame==2.0.0
+pygame-menu==3.3.0
+pyperclip==1.8.1
