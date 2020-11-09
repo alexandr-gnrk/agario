@@ -4,6 +4,8 @@ from operator import add, sub
 from cell import Cell
 
 class Player(Cell):
+    """Class that represents player game state."""
+
     def __init__(self, nick, pos, radius, color, border_color):
         super().__init__(pos, radius, color, border_color)
         # angle of speed in rad
@@ -16,6 +18,7 @@ class Player(Cell):
         self._nick = nick
 
     def move(self, angle, speed):
+        """Change player velocity and move according passed velocity."""
         self._update_velocity(angle, speed)
         # get cartesian vector
         vel = self._polar_to_cartesian(
@@ -25,9 +28,13 @@ class Player(Cell):
         self._pos = list(map(add, self._pos, vel))
 
     def feed(self, cell):
+        """Increase player radius with passed cell."""
         self._update_radius(cell.radius)
 
     def _update_velocity(self, angle, speed):
+        """Set player velocity as sum of player speed vector 
+        and passed vector.
+        """
         # convert to cartesian
         v1 = self._polar_to_cartesian(angle, speed)
         v2 = self._polar_to_cartesian(self._angle, self._speed)
@@ -41,12 +48,14 @@ class Player(Cell):
             self._speed = 1
 
     def _update_radius(self, radius):
+        """Set radius as radius sum of two areas."""
         new_area = self._circle_area(self._radius) + \
             self._circle_area(radius)
         self._radius = math.sqrt(new_area / math.pi)
 
     @classmethod
     def make_random(cls, nick, world_size):
+        """Returns random player."""
         pos = cls._random_pos(world_size)
         radius = 20
         color = cls._random_color()
@@ -55,20 +64,24 @@ class Player(Cell):
 
     @classmethod
     def is_collided(cls, first, second):
+        """Check is there a colision between first and second objects."""
         if cls._distance(first.pos, second.pos) <= first.radius - second.radius:
             return True
         return False
 
     @classmethod
     def _polar_to_cartesian(cls, angle, val):
+        """Converts polar vector to cartesian pos."""
         return val * math.cos(angle), val * math.sin(angle)
 
     @classmethod
     def _circle_area(cls, radius):
+        """Returns area of circle."""
         return math.pi * radius**2
 
     @classmethod
     def _distance(cls, pos1, pos2):
+        """Returns distance between two dots."""
         diff = list(map(lambda x, y: abs(x - y), pos1, pos2))
         return math.sqrt(diff[0]**2 + diff[1]**2)
 
