@@ -48,7 +48,7 @@ class View():
         for cell in self.model.cells:
             self.draw_object(cell, font)
         self.draw_object(self.model.player, font)
-        self.draw_hud(font)
+        self.draw_hud(font, (8, 5))
     
     def draw_grid(self, step=25):
         world_size = self.model.world_size
@@ -103,16 +103,17 @@ class View():
             pos[1] -= text_surface.get_height() // 2
         surface.blit(text_surface, pos)
 
-    def draw_hud(self, font):
+    def draw_hud(self, font, padding):
         score_text = 'Score: {:6}'.format(int(self.model.player.radius))
         print(score_text)
         self.draw_hud_item(
-             (15, self.height - 30),
+             (15, self.height - 30 - 2*padding[1]),
              (score_text,),
              font,
-             10)
+             10,
+             padding)
 
-    def draw_hud_item(self, pos, lines, font, maxchars):
+    def draw_hud_item(self, pos, lines, font, maxchars, padding):
         # seacrh max line width
         max_width = font.size(lines[0])[0]
         for line in lines:
@@ -120,7 +121,9 @@ class View():
                 max_width = font.size(line)[0]
         font_height = font.get_height()
         # size of HUD item background
-        item_size = max_width, font_height*len(lines)
+        item_size = (
+            max_width + 2*padding[0], 
+            font_height*len(lines) + 2*padding[1])
         # scaling transparent hud background
         item_surface = pygame.transform.scale(self.hud_surface, item_size)
         # draw each line
@@ -128,7 +131,7 @@ class View():
             self.draw_text(
                 item_surface,
                 line,
-                (0, font_height*i),
+                (padding[0], padding[1] + font_height*i),
                 font)
         # bilt on main surface
         self.screen.blit(item_surface, pos)
