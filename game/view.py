@@ -7,6 +7,8 @@ from model import Model
 from player import Player
 
 class Camera(object):
+    """Class that converts cartesian pos to pixel pos on the screen."""
+
     def __init__(self, x, y, width, height, scale=1):
         # top left point of camera box
         self.x, self.y = x, y
@@ -14,16 +16,18 @@ class Camera(object):
         self.scale = 1
 
     def set_center(self, pos):
+        """Change camera postion according to passed center."""
         self.x = pos[0] - self.width/2
         self.y = pos[1] + self.height/2
-        # return pos[0]*self.scale - self.width//2, pos[1]*self.scale + self.height/2  
 
     def adjust(self, pos):
-        # return self.x - pos[0]*self.scale, self.y - pos[1]*self.scale  
+        """Convert cartesian pos to pos relative to the camera."""
         return  pos[0]*self.scale - self.x, self.y - pos[1]*self.scale
 
 
 class View():
+    """"Class that displays model state and shows HUD"""
+
     TEXT_COLOR = (50, 50, 50)
     HUD_BACGROUND_COLOR = (50,50,50,80)
     BACKGROUND_COLOR = (242, 251, 255)
@@ -44,6 +48,7 @@ class View():
         self.font = pygame.font.Font(pygame.font.get_default_font(), 18)
 
     def redraw(self):
+        """Redraw screen according to model of game."""
         self.screen.fill(View.BACKGROUND_COLOR)
         self.draw_grid()
         for cell in self.model.cells:
@@ -52,6 +57,7 @@ class View():
         self.draw_hud((8, 5))
     
     def draw_grid(self, step=25):
+        """Draw grid on screen with passed step."""
         world_size = self.model.world_size
         for i in range(-world_size, world_size+step, step):
             start_coord = (-world_size, i)
@@ -70,6 +76,7 @@ class View():
                 2)
 
     def draw_object(self, obj):
+        """Draw passed object on the screen. Object could be Cell or Player."""
         # draw filled circle
         pygame.draw.circle(
             self.screen,
@@ -83,7 +90,7 @@ class View():
             self.camera.adjust(obj.pos),
             obj.radius,
             obj.BORDER_WIDTH)
-        # show nickname
+        # show nickname if obj is a Player
         if isinstance(obj, Player):
             self.draw_text(
                 self.screen,
@@ -92,20 +99,18 @@ class View():
                 align_center=True)
 
     def draw_text(self, surface, text, pos, color=TEXT_COLOR, align_center=False):
-        # select font
-        # font = self.get_font(18)
-        # render text
+        """Draw passed text on passed surface."""
         text_surface = self.font.render(text, True, color)
         pos = list(pos)
         if align_center:
-            # define the center
+            # offset pos if was passed center
             pos[0] -= text_surface.get_width() // 2
             pos[1] -= text_surface.get_height() // 2
         surface.blit(text_surface, pos)
 
     def draw_hud(self, padding):
+        """Draw score and top players HUDs."""
         score_text = 'Score: {:6}'.format(int(self.model.player.radius))
-        print(score_text)
         self.draw_hud_item(
              (15, self.height - 30 - 2*padding[1]),
              (score_text,),
@@ -113,17 +118,15 @@ class View():
              padding)
 
     def draw_hud_item(self, pos, lines, maxchars, padding):
+        """Draw HUD item with passed string lines."""
         # seacrh max line width
-        max_width = self.font.size(lines[0])[0]
-        for line in lines:
-            if self.font.size(line)[0] > max_width:
-                max_width = self.font.size(line)[0]
+        max_width = max(map(lambda line: self.font.size(line)[0], lines))
         font_height = self.font.get_height()
         # size of HUD item background
         item_size = (
             max_width + 2*padding[0], 
             font_height*len(lines) + 2*padding[1])
-        # scaling transparent hud background
+        # scaling transparent HUD background
         item_surface = pygame.transform.scale(self.hud_surface, item_size)
         # draw each line
         for i, line in enumerate(lines):
@@ -135,6 +138,7 @@ class View():
         self.screen.blit(item_surface, pos)
     
     def start(self):
+        """Start game loop."""
         while True:
             events = pygame.event.get()
             for event in events:
@@ -149,12 +153,12 @@ class View():
             self.clock.tick(self.fps)
 
     def mouse_pos_to_polar(self):
-        # convert mouse position to polar vector
+        """Convert mouse position to polar vector."""
         x, y = pygame.mouse.get_pos()
         # center offset 
         x -= self.width/2
         y = self.height/2 - y
-
+        # get angle and length(speed) of vector
         angle = math.atan2(y, x)
         speed = math.sqrt(x**2 + y**2)
         # setting radius of speed change zone
