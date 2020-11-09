@@ -75,4 +75,8 @@ class Player(Cell):
     @property
     def nick(self):
         return self._nick
+
+    @property
+    def area(self):
+        return self._circle_area(self._radius)
     
