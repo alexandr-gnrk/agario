@@ -1,11 +1,14 @@
 import random
 
 class Cell():
+    """Represents cell(food) state."""
+
     BORDER_WIDTH = 5
+
     def __init__(self, pos, radius, color, border_color=None):
         # x, y position
         self._pos = pos
-        # radius (a.k.a mass)
+        # radius(mass)
         self._radius = radius
         # rgb color
         self._color = color
@@ -13,6 +16,7 @@ class Cell():
 
     @classmethod
     def make_random(cls, world_size):
+        """Returns random cell."""
         pos = cls._random_pos(world_size)
         radius = random.choices((5, 7, 10), (70, 20, 10))[0]
         color = cls._random_color()
@@ -22,21 +26,29 @@ class Cell():
 
     @classmethod
     def _random_color(cls):
-        # set two random fields with 7 and 255
-        # last field set [0 - 255]
+        """Returns random safe color.
+
+        Two random values of three RGB is 7 and 255
+        and last is in range [0 - 255]
+        """
         lights = (7, 255, random.randint(0, 255))
         return random.sample(lights, 3)
 
     @classmethod
     def _random_pos(cls, world_size):
+        """Returns random pos in within game field."""
         return (random.randint(-world_size, world_size), 
             random.randint(-world_size, world_size))
 
     @classmethod
     def _make_border_color(self, color):
-        # makes border color by passed color
-        # 255 -> 229, 7 -> 6, other -> 0.9*other
-        mapper = lambda l: 229 if (l == 255) else 6 if (l == 6) else 0.9*l
+        """Creates border color from passed color.
+
+        Simply maps 255 to 229 and 7 to 6.
+        Third light is multiply by 0.9
+        (255 -> 229, 7 -> 6, other -> 0.9*other)
+        """
+        mapper = lambda l: 229 if (l == 255) else 6 if (l == 7) else 0.9*l
         return list(map(mapper, color))
 
     @property
