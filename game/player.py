@@ -1,56 +1,50 @@
 import math
-from operator import add, sub
+from operator import add
 
 from cell import Cell
+
 
 class Player(Cell):
     """Class that represents player game state."""
 
     def __init__(self, nick, pos, radius, color, border_color):
         super().__init__(pos, radius, color, border_color)
-        # angle of speed in rad
-        self._angle = 0
-        # speed coeff [0, 1]
-        self._speed = 0
         # max possible speed
         self._max_speed = 5
         # nickname
         self._nick = nick
 
-    def move(self, angle, speed):
-        """Change player velocity and move according passed velocity."""
-        self._update_velocity(angle, speed)
-        # get cartesian vector
-        vel = self._polar_to_cartesian(
-            self._angle, 
-            self._speed * self._max_speed)
-        # change player position
-        self._pos = list(map(add, self._pos, vel))
-
     def feed(self, cell):
         """Increase player radius with passed cell."""
         self._update_radius(cell.radius)
 
-    def _update_velocity(self, angle, speed):
-        """Set player velocity as sum of player speed vector 
-        and passed vector.
-        """
-        # convert to cartesian
-        v1 = self._polar_to_cartesian(angle, speed)
-        v2 = self._polar_to_cartesian(self._angle, self._speed)
-        # adding vectors
-        v3 = list(map(add, v1, v2))
-        # convert to polar
-        self._speed = math.sqrt(v3[0]**2 + v3[1]**2)
-        self._angle = math.atan2(v3[1], v3[0])
-        # normilize speed coeff
-        if self._speed > 1:
-            self._speed = 1
+    def shoot(self, angle):
+        """Shoots with cell to given direction."""
+        cell_radius = 5
+        cell_speed = 100
+        self._update_radius(cell_radius, sub=True)
+        # find delta to move spawn cell outside player circle
+        delta = self._radius*math.cos(angle), self._radius*math.sin(angle)
+        # delta = 50, 50
+        cell_pos = list(map(add, self._pos, delta))
+        # spawn cell
+        cell = Cell(cell_pos, cell_radius, self.color)
+        cell.update_velocity(angle, cell_speed)
+        return cell
 
-    def _update_radius(self, radius):
-        """Set radius as radius sum of two areas."""
-        new_area = self._circle_area(self._radius) + \
-            self._circle_area(radius)
+    def able_to_shoot(self):
+        """Checks if player able to shoot."""
+        if self._radius > 40:
+            return True
+        return False
+
+    def _update_radius(self, radius, sub=False):
+        """Update according to eaten or loosed circle radius."""
+        new_area = self._circle_area(self._radius)
+        if not sub:
+            new_area += self._circle_area(radius)
+        else:
+            new_area -= self._circle_area(radius)
         self._radius = math.sqrt(new_area / math.pi)
 
     @classmethod
@@ -70,10 +64,6 @@ class Player(Cell):
             return True
         return False
 
-    @classmethod
-    def _polar_to_cartesian(cls, angle, val):
-        """Converts polar vector to cartesian pos."""
-        return val * math.cos(angle), val * math.sin(angle)
 
     @classmethod
     def _distance(cls, pos1, pos2):

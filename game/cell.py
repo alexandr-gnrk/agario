@@ -1,6 +1,8 @@
 import random
 import math
 
+from operator import add
+
 class Cell():
     """Represents cell(food) state."""
 
@@ -9,11 +11,46 @@ class Cell():
     def __init__(self, pos, radius, color, border_color=None):
         # x, y position
         self._pos = pos
+        # angle of speed in rad
+        self._angle = 0
+        # speed coeff [0, 1]
+        self._speed = 0
+        # max possible speed
+        self._max_speed = 10
         # radius(mass)
         self._radius = radius
         # rgb color
         self._color = color
         self._border_color = border_color if border_color else self._color
+
+    def move(self):
+        """Move according stored velocity."""
+        # get cartesian vector
+        vel = self._polar_to_cartesian(
+            self._angle, 
+            self._speed * self._max_speed)
+        # change position
+        self._pos = list(map(add, self._pos, vel))
+
+    def update_velocity(self, angle=0, speed=0):
+        """Set velocity as sum of self speed vector 
+        and passed vector.
+        """
+        # simulate friction
+        self._speed -= 0.02
+        # convert to cartesian
+        v1 = self._polar_to_cartesian(angle, speed)
+        v2 = self._polar_to_cartesian(self._angle, self._speed)
+        # adding vectors
+        v3 = list(map(add, v1, v2))
+        # convert to polar
+        self._speed = math.sqrt(v3[0]**2 + v3[1]**2)
+        self._angle = math.atan2(v3[1], v3[0])
+        # normilize speed coeff
+        if self._speed > 1:
+            self._speed = 1
+        elif self._speed < 0:
+            self._speed = 0 
 
     @classmethod
     def make_random(cls, world_size):
@@ -56,6 +93,11 @@ class Cell():
     def _circle_area(cls, radius):
         """Returns area of circle."""
         return math.pi * radius**2
+
+    @classmethod
+    def _polar_to_cartesian(cls, angle, val):
+        """Converts polar vector to cartesian pos."""
+        return val * math.cos(angle), val * math.sin(angle)
 
     @property
     def pos(self):

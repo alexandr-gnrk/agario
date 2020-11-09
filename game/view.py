@@ -35,9 +35,10 @@ class View():
     HUD_PADDING = (3, 3)
     FONT_SIZE = 18
 
-    def __init__(self, width, height, model):
+    def __init__(self, width, height, model, player):
         self.width, self.height = width, height
         self.model = model
+        self.player = player
         self.camera = Camera(0, 0, self.width, self.height)
         self.fps = 30
         pygame.init()
@@ -111,7 +112,7 @@ class View():
     def draw_hud(self, padding):
         """Draw score and top players HUDs."""
         # draw score HUD item
-        score_text = 'Score: {:6}'.format(int(self.model.player.radius))
+        score_text = 'Score: {:6}'.format(int(self.player.radius))
         self.draw_hud_item(
              (15, self.height - 30 - 2*padding[1]),
              (score_text,),
@@ -131,7 +132,6 @@ class View():
              lines,
              10,
              padding)
-
 
     def draw_hud_item(self, pos, lines, maxchars, padding):
         """Draw HUD item with passed string lines."""
@@ -160,10 +160,18 @@ class View():
             for event in events:
                 if event.type == pygame.QUIT:
                     exit()
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_w:
+                        self.model.shoot(
+                            self.player,
+                            self.mouse_pos_to_polar()[0])
 
             # print(self)
-            self.model.move(*(self.mouse_pos_to_polar()))
-            self.camera.set_center(self.model.player.pos)
+            self.model.update_velocity(
+                self.player,
+                *(self.mouse_pos_to_polar()))
+            self.model.update()
+            self.camera.set_center(self.player.pos)
             self.redraw()
             pygame.display.flip()
             self.clock.tick(self.fps)
@@ -186,13 +194,15 @@ class View():
 
 world_size = 1000
 cell_num = 100
+p = Player.make_random("Jetraid", world_size)
+p._radius = 80
 players = [
+    p,
     Player.make_random("Sobaka", world_size),
     Player.make_random("Kit", world_size),
     Player.make_random("elohssa", world_size),
 ]
-p = Player.make_random("Jetraid", world_size)
-m = Model(p, players, world_size)
+m = Model(players, world_size)
 m.spawn_cells(cell_num)
-v = View(900, 600, m)
+v = View(900, 600, m, p)
 v.start()
