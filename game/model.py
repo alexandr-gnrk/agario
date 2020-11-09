@@ -18,7 +18,7 @@ class Model():
         self._cells = list()
 
     def move(self, angle, speed):
-        """Make player movement.""" 
+        """Make player movement."""
         self.player.move(angle, speed)
         for obj in self.objects:
             if Player.is_collided(self._player, obj):
@@ -40,6 +40,10 @@ class Model():
     @property
     def player(self):
         return self._player
+
+    @property
+    def players(self):
+        return self._players
 
     @property
     def cells(self):

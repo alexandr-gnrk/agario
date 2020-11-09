@@ -110,12 +110,28 @@ class View():
 
     def draw_hud(self, padding):
         """Draw score and top players HUDs."""
+        # draw score HUD item
         score_text = 'Score: {:6}'.format(int(self.model.player.radius))
         self.draw_hud_item(
              (15, self.height - 30 - 2*padding[1]),
              (score_text,),
              10,
              padding)
+        # draw leaderboard HUD item
+        lines = list()
+        lines.append('Leaderboard')
+        top10 = sorted(
+            self.model.players,
+            key=lambda pl: pl.radius,
+            reverse=True)[:10]
+        for i, player in enumerate(top10):
+            lines.append('{}. {}'.format(i + 1, player.nick))
+        self.draw_hud_item(
+             (self.width - 150, 15),
+             lines,
+             10,
+             padding)
+
 
     def draw_hud_item(self, pos, lines, maxchars, padding):
         """Draw HUD item with passed string lines."""
@@ -168,7 +184,7 @@ class View():
         return angle, speed
 
 
-world_size = 400
+world_size = 1000
 cell_num = 100
 players = [
     Player.make_random("Sobaka", world_size),
