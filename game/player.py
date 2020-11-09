@@ -65,7 +65,8 @@ class Player(Cell):
     @classmethod
     def is_collided(cls, first, second):
         """Check is there a colision between first and second objects."""
-        if cls._distance(first.pos, second.pos) <= first.radius - second.radius:
+        if first.area >= 2*second.area and \
+            cls._distance(first.pos, second.pos) <= first.radius - second.radius:
             return True
         return False
 
@@ -73,11 +74,6 @@ class Player(Cell):
     def _polar_to_cartesian(cls, angle, val):
         """Converts polar vector to cartesian pos."""
         return val * math.cos(angle), val * math.sin(angle)
-
-    @classmethod
-    def _circle_area(cls, radius):
-        """Returns area of circle."""
-        return math.pi * radius**2
 
     @classmethod
     def _distance(cls, pos1, pos2):
@@ -88,8 +84,4 @@ class Player(Cell):
     @property
     def nick(self):
         return self._nick
-
-    @property
-    def area(self):
-        return self._circle_area(self._radius)
     

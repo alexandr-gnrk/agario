@@ -1,4 +1,5 @@
 import random
+import math
 
 class Cell():
     """Represents cell(food) state."""
@@ -51,6 +52,11 @@ class Cell():
         mapper = lambda l: 229 if (l == 255) else 6 if (l == 7) else 0.9*l
         return list(map(mapper, color))
 
+    @classmethod
+    def _circle_area(cls, radius):
+        """Returns area of circle."""
+        return math.pi * radius**2
+
     @property
     def pos(self):
         return self._pos
@@ -65,4 +71,8 @@ class Cell():
 
     @property
     def border_color(self):
-        return self._border_color    
+        return self._border_color
+
+    @property
+    def area(self):
+        return self._circle_area(self._radius)

@@ -51,9 +51,9 @@ class View():
         """Redraw screen according to model of game."""
         self.screen.fill(View.BACKGROUND_COLOR)
         self.draw_grid()
-        for cell in self.model.cells:
-            self.draw_object(cell)
-        self.draw_object(self.model.player)
+        for obj in self.model.objects:
+            self.draw_object(obj)
+        # self.draw_object(self.model.player)
         self.draw_hud((8, 5))
     
     def draw_grid(self, step=25):
@@ -170,8 +170,13 @@ class View():
 
 world_size = 400
 cell_num = 100
+players = [
+    Player.make_random("Sobaka", world_size),
+    Player.make_random("Kit", world_size),
+    Player.make_random("elohssa", world_size),
+]
 p = Player.make_random("Jetraid", world_size)
-m = Model(p, world_size)
+m = Model(p, players, world_size)
 m.spawn_cells(cell_num)
 v = View(900, 600, m)
 v.start()
