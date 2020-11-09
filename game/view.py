@@ -1,5 +1,6 @@
 import math
 
+from loguru import logger
 import pygame
 import pygame.gfxdraw
 
@@ -197,10 +198,10 @@ cell_num = 100
 p = Player.make_random("Jetraid", world_size)
 p._radius = 80
 players = [
-    p,
     Player.make_random("Sobaka", world_size),
     Player.make_random("Kit", world_size),
     Player.make_random("elohssa", world_size),
+    p,
 ]
 m = Model(players, world_size)
 m.spawn_cells(cell_num)

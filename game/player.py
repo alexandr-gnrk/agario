@@ -7,10 +7,11 @@ from cell import Cell
 class Player(Cell):
     """Class that represents player game state."""
 
+    MAX_SPEED = 5
+    SHOOTCELL_RADIUS = 10
+
     def __init__(self, nick, pos, radius, color, border_color):
         super().__init__(pos, radius, color, border_color)
-        # max possible speed
-        self._max_speed = 5
         # nickname
         self._nick = nick
 
@@ -20,8 +21,8 @@ class Player(Cell):
 
     def shoot(self, angle):
         """Shoots with cell to given direction."""
-        cell_radius = 5
-        cell_speed = 100
+        cell_radius = self.SHOOTCELL_RADIUS
+        cell_speed = Cell.MAX_SPEED
         self._update_radius(cell_radius, sub=True)
         # find delta to move spawn cell outside player circle
         delta = self._radius*math.cos(angle), self._radius*math.sin(angle)
@@ -74,4 +75,19 @@ class Player(Cell):
     @property
     def nick(self):
         return self._nick
+
+    def __str__(self):
+        return '<{} nick={} pos={} radius={}>'.format(
+            self.__class__.__name__,
+            self._nick,
+            list(map(int, self._pos)),
+            int(self._radius))
+
+    def __repr__(self):
+        return '<{} nick={} pos={} radius={} color={}>'.format(
+            self.__class__.__name__,
+            self._nick,
+            list(map(int, self._pos)),
+            int(self._radius),
+            self._color)
     

@@ -1,3 +1,4 @@
+from loguru import logger
 
 from cell import Cell
 from player import Player
@@ -15,14 +16,14 @@ class Model():
         """Update passed player velocity."""
         player.update_velocity(angle, speed)
 
-
     def shoot(self, player, angle):
         """Shoots into given direction."""
         if player.able_to_shoot():
-            print('Shoot')
             cell = player.shoot(angle)
-            print(cell)
-            self._cells.append(cell)        
+            self._cells.append(cell)
+            logger.debug(f'{player} shot')
+        else:
+            logger.debug(f'{player} tried to shoot, but he can\'t')
 
     def update(self):
         """Update game state."""
@@ -34,13 +35,12 @@ class Model():
             player.move()
             for obj in self.objects:
                 if Player.is_collided(player, obj):
+                    logger.info(f'{player} ate {obj}')
                     player.feed(obj)
                     if isinstance(obj, Player):
                         self._players.remove(obj)
                     else:
                         self._cells.remove(obj)
-
-            
 
     def spawn_cells(self, amount):
         """Spawn passed amount of cells on the field."""

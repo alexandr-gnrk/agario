@@ -7,6 +7,8 @@ class Cell():
     """Represents cell(food) state."""
 
     BORDER_WIDTH = 5
+    FRICTION = 0.02
+    MAX_SPEED = 10
 
     def __init__(self, pos, radius, color, border_color=None):
         # x, y position
@@ -15,8 +17,6 @@ class Cell():
         self._angle = 0
         # speed coeff [0, 1]
         self._speed = 0
-        # max possible speed
-        self._max_speed = 10
         # radius(mass)
         self._radius = radius
         # rgb color
@@ -25,10 +25,14 @@ class Cell():
 
     def move(self):
         """Move according stored velocity."""
+        # simulate friction
+        self._speed -= 0.02
+        if self._speed < 0:
+            self._speed = 0
         # get cartesian vector
         vel = self._polar_to_cartesian(
             self._angle, 
-            self._speed * self._max_speed)
+            self._speed * self.MAX_SPEED)
         # change position
         self._pos = list(map(add, self._pos, vel))
 
@@ -36,8 +40,6 @@ class Cell():
         """Set velocity as sum of self speed vector 
         and passed vector.
         """
-        # simulate friction
-        self._speed -= 0.02
         # convert to cartesian
         v1 = self._polar_to_cartesian(angle, speed)
         v2 = self._polar_to_cartesian(self._angle, self._speed)
@@ -49,8 +51,6 @@ class Cell():
         # normilize speed coeff
         if self._speed > 1:
             self._speed = 1
-        elif self._speed < 0:
-            self._speed = 0 
 
     @classmethod
     def make_random(cls, world_size):
@@ -118,3 +118,16 @@ class Cell():
     @property
     def area(self):
         return self._circle_area(self._radius)
+
+    def __str__(self):
+        return '<{} pos={} radius={}>'.format(
+            self.__class__.__name__,
+            list(map(int, self._pos)),
+            int(self._radius))
+
+    def __repr__(self):
+        return '<{} pos={} radius={} color={}>'.format(
+            self.__class__.__name__,
+            list(map(int, self._pos)),
+            int(self._radius),
+            self._color)
