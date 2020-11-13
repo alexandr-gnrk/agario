@@ -6,11 +6,11 @@ from player import Player
 class Model():
     """Class that represents game state."""
 
-    def __init__(self, players, world_size=1000):
+    def __init__(self, players, bounds=(1000, 1000)):
         # means that size of world is [-world_size, world_size] 
-        self._world_size = world_size
-        self._players = players
-        self._cells = list()
+        self.bounds = bounds
+        self.players = players
+        self.cells = list()
 
     def update_velocity(self, player, angle, speed):
         """Update passed player velocity."""
@@ -18,48 +18,48 @@ class Model():
 
     def shoot(self, player, angle):
         """Shoots into given direction."""
-        if player.able_to_shoot():
-            cell = player.shoot(angle)
-            self._cells.append(cell)
+        emitted_cells = player.shoot(angle)
+        self.cells.extend(emitted_cells)
+        if emitted_cells:
             logger.debug(f'{player} shot')
         else:
             logger.debug(f'{player} tried to shoot, but he can\'t')
 
+    # def split(self, player, angle):
+    #     """Shoots into given direction."""
+    #     if player.able_to_shoot():
+    #         cells = player.shoot(angle)
+    #         logger.debug(f'{player} shot')
+    #     else:
+    #         logger.debug(f'{player} tried to shoot, but he can\'t')
+
     def update(self):
-        """Update game state."""
+        """Updates game state."""
         # update cells
-        for cell in self._cells:
+        for cell in self.cells:
             cell.move()
         # update players
-        for player in self._players:
+        for player in self.players:
             player.move()
-            for obj in self.objects:
-                if Player.is_collided(player, obj):
-                    logger.info(f'{player} ate {obj}')
-                    player.feed(obj)
-                    if isinstance(obj, Player):
-                        self._players.remove(obj)
+
+            for cell in self.cells:
+                killed_cell = player.attempt_murder(cell)
+                if killed_cell:
+                    logger.debug(f'{player} ate {killed_cell}')
+                    self.cells.remove(killed_cell)
+
+            for another_player in self.players:
+                killed_cell = player.attempt_murder(another_player)
+                if killed_cell:
+                    if len(another_player.parts) == 1:
+                        logger.debug(f'{player} ate {another_player}')
+                        another_player.remove_part(killed_cell)
+                        self.players.remove(another_player)
                     else:
-                        self._cells.remove(obj)
+                        logger.debug(f'{player} ate {another_player} part {killed_cell}')
 
     def spawn_cells(self, amount):
         """Spawn passed amount of cells on the field."""
         for _ in range(amount):
-            self._cells.append(Cell.make_random(self.world_size))
-
-    @property
-    def world_size(self):
-        return self._world_size
-
-    @property
-    def players(self):
-        return self._players
-
-    @property
-    def cells(self):
-        return self._cells
-
-    @property
-    def objects(self):
-        return self._cells + self._players
+            self.cells.append(Cell.make_random(self.bounds))
     

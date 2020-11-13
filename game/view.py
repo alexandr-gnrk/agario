@@ -6,6 +6,7 @@ import pygame.gfxdraw
 
 from model import Model
 from player import Player
+import gameutils as gu
 
 class Camera(object):
     """Class that converts cartesian pos to pixel pos on the screen."""
@@ -53,14 +54,16 @@ class View():
         """Redraw screen according to model of game."""
         self.screen.fill(View.BACKGROUND_COLOR)
         self.draw_grid()
-        for obj in self.model.objects:
-            self.draw_object(obj)
+        for cell in self.model.cells:
+            self.draw_cell(cell)
+        for player in self.model.players:
+            self.draw_player(player)
         # self.draw_object(self.model.player)
         self.draw_hud((8, 5))
-    
+
     def draw_grid(self, step=25):
         """Draw grid on screen with passed step."""
-        world_size = self.model.world_size
+        world_size = self.model.bounds[0]
         for i in range(-world_size, world_size+step, step):
             start_coord = (-world_size, i)
             end_coord = (world_size, i)
@@ -77,27 +80,32 @@ class View():
                 self.camera.adjust(end_coord[::-1]), 
                 2)
 
-    def draw_object(self, obj):
-        """Draw passed object on the screen. Object could be Cell or Player."""
+    def draw_cell(self, cell):
+        """Draw passed cell on the screen"""
         # draw filled circle
         pygame.draw.circle(
             self.screen,
-            obj.color,
-            self.camera.adjust(obj.pos),
-            obj.radius)
+            cell.color,
+            self.camera.adjust(cell.pos),
+            cell.radius)
+        
         # draw circle border
-        pygame.draw.circle(
-            self.screen,
-            obj.border_color,
-            self.camera.adjust(obj.pos),
-            obj.radius,
-            obj.BORDER_WIDTH)
-        # show nickname if obj is a Player
-        if isinstance(obj, Player):
+        if cell.BORDER_WIDTH != 0:
+            pygame.draw.circle(
+                self.screen,
+                gu.make_border_color(cell.color),
+                self.camera.adjust(cell.pos),
+                cell.radius,
+                cell.BORDER_WIDTH)
+
+    def draw_player(self, player):
+        for cell in player.parts:
+            self.draw_cell(cell)
+            # show nickname if obj is a Player
             self.draw_text(
                 self.screen,
-                obj.nick, 
-                self.camera.adjust(obj.pos), 
+                player.nick,
+                self.camera.adjust(cell.pos),
                 align_center=True)
 
     def draw_text(self, surface, text, pos, color=TEXT_COLOR, align_center=False):
@@ -113,7 +121,7 @@ class View():
     def draw_hud(self, padding):
         """Draw score and top players HUDs."""
         # draw score HUD item
-        score_text = 'Score: {:6}'.format(int(self.player.radius))
+        score_text = 'Score: {:6}'.format(int(self.player.score()))
         self.draw_hud_item(
              (15, self.height - 30 - 2*padding[1]),
              (score_text,),
@@ -124,7 +132,7 @@ class View():
         lines.append('Leaderboard')
         top10 = sorted(
             self.model.players,
-            key=lambda pl: pl.radius,
+            key=lambda pl: pl.score(),
             reverse=True)[:10]
         for i, player in enumerate(top10):
             lines.append('{}. {}'.format(i + 1, player.nick))
@@ -166,13 +174,17 @@ class View():
                         self.model.shoot(
                             self.player,
                             self.mouse_pos_to_polar()[0])
+                    # elif event.key == pygame.K_SPACE:
+                    #     self.model.split(
+                    #         self.player,
+                    #         self.mouse_pos_to_polar()[0])
 
             # print(self)
             self.model.update_velocity(
                 self.player,
                 *(self.mouse_pos_to_polar()))
             self.model.update()
-            self.camera.set_center(self.player.pos)
+            self.camera.set_center(self.player.center())
             self.redraw()
             pygame.display.flip()
             self.clock.tick(self.fps)
@@ -193,17 +205,17 @@ class View():
         return angle, speed
 
 
-world_size = 1000
+bounds = [1000, 1000]
 cell_num = 100
-p = Player.make_random("Jetraid", world_size)
-p._radius = 80
+p = Player.make_random("Jetraid", bounds)
+p.parts[0].radius = 80
 players = [
-    Player.make_random("Sobaka", world_size),
-    Player.make_random("Kit", world_size),
-    Player.make_random("elohssa", world_size),
+    Player.make_random("Sobaka", bounds),
+    Player.make_random("Kit", bounds),
+    Player.make_random("elohssa", bounds),
     p,
 ]
-m = Model(players, world_size)
+m = Model(players, bounds)
 m.spawn_cells(cell_num)
 v = View(900, 600, m, p)
 v.start()

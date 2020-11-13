@@ -1,93 +1,99 @@
+import functools
+import operator
 import math
-from operator import add
 
-from cell import Cell
+from victim import Victim
+from killer import Killer
+from playercell import PlayerCell
+# from gameutils import apply
 
-
-class Player(Cell):
+class Player(Victim, Killer):
     """Class that represents player game state."""
 
-    MAX_SPEED = 5
-    SHOOTCELL_RADIUS = 10
+    START_SIZE = 40
+    BORDER_WIDTH = 5
 
-    def __init__(self, nick, pos, radius, color, border_color):
-        super().__init__(pos, radius, color, border_color)
-        # nickname
-        self._nick = nick
 
-    def feed(self, cell):
-        """Increase player radius with passed cell."""
-        self._update_radius(cell.radius)
+    def __init__(self, nick, player_cell):
+        self.nick = nick
+        # cells of which player consists
+        self.parts = [player_cell]
+        # self.parts = [PlayerCell(pos, radius, color, border_color)]
+
+    def move(self):
+        """Move each part of player and check parts for collision."""
+        for cell in self.parts:
+            # check for collisison
+            cell.move()
+
+    def update_velocity(self, angle, speed):
+        """Update velocity of each part."""
+        for cell in self.parts:
+            cell.update_velocity(angle, speed)
 
     def shoot(self, angle):
-        """Shoots with cell to given direction."""
-        cell_radius = self.SHOOTCELL_RADIUS
-        cell_speed = Cell.MAX_SPEED
-        self._update_radius(cell_radius, sub=True)
-        # find delta to move spawn cell outside player circle
-        delta = self._radius*math.cos(angle), self._radius*math.sin(angle)
-        # delta = 50, 50
-        cell_pos = list(map(add, self._pos, delta))
-        # spawn cell
-        cell = Cell(cell_pos, cell_radius, self.color)
-        cell.update_velocity(angle, cell_speed)
-        return cell
+        """Shoots with cells to given direction."""
+        emmited = list()
+        for cell in self.parts:
+            if cell.able_to_shoot():
+                emmited.append(cell.shoot(angle))
 
-    def able_to_shoot(self):
-        """Checks if player able to shoot."""
-        if self._radius > 40:
-            return True
-        return False
+        return emmited
 
-    def _update_radius(self, radius, sub=False):
-        """Update according to eaten or loosed circle radius."""
-        new_area = self._circle_area(self._radius)
-        if not sub:
-            new_area += self._circle_area(radius)
-        else:
-            new_area -= self._circle_area(radius)
-        self._radius = math.sqrt(new_area / math.pi)
+    def center(self):
+        """Returns center median position of all player cells."""
+        pos_sum = functools.reduce(
+            operator.add,
+            (cell.pos for cell in self.parts))
+        center = [
+            pos_sum[0]/len(self.parts),
+            pos_sum[1]/len(self.parts)]
+        return center
+
+    def score(self):
+        """Returns player score.
+        Score is radius of circle that consists of all parts area sum.
+        """
+        radius_sqr = functools.reduce(
+            operator.add,
+            (cell.radius**2 for cell in self.parts))
+        return math.sqrt(radius_sqr)
+
+    def attempt_murder(self, victim):
+        """Try to kill passed victim by player parts. 
+        Returns killed Cell if can, otherwise return None.
+        """
+        for cell in self.parts:
+            killed_cell = victim.try_to_kill_by(cell)
+            if killed_cell:
+                # feed player cell with killed cell
+                cell.eat(killed_cell)
+                return killed_cell
+        return None
+
+    def try_to_kill_by(self, killer):
+        """Check is killer cell could eat some of player parts.
+        Returns killed player part or None.
+        """
+        for cell in self.parts:
+            killed_cell = killer.attempt_murder(cell)
+            if killed_cell:
+                return killed_cell
+        return None
+
+    def remove_part(self, cell):
+        """Removes passed player cell from player parts list."""
+        self.parts.remove(cell)
 
     @classmethod
-    def make_random(cls, nick, world_size):
-        """Returns random player."""
-        pos = cls._random_pos(world_size)
-        radius = 20
-        color = cls._random_color()
-        border_color = cls._make_border_color(color)
-        return cls(nick, pos, radius, color, border_color)
-
-    @classmethod
-    def is_collided(cls, first, second):
-        """Check is there a colision between first and second objects."""
-        if first.area >= 2*second.area and \
-            cls._distance(first.pos, second.pos) <= first.radius - second.radius:
-            return True
-        return False
-
-
-    @classmethod
-    def _distance(cls, pos1, pos2):
-        """Returns distance between two dots."""
-        diff = list(map(lambda x, y: abs(x - y), pos1, pos2))
-        return math.sqrt(diff[0]**2 + diff[1]**2)
-
-    @property
-    def nick(self):
-        return self._nick
-
-    def __str__(self):
-        return '<{} nick={} pos={} radius={}>'.format(
-            self.__class__.__name__,
-            self._nick,
-            list(map(int, self._pos)),
-            int(self._radius))
+    def make_random(cls, nick, bounds):
+        """Returns random player with given nick."""
+        player_cell = PlayerCell.make_random(bounds)
+        player_cell.radius = cls.START_SIZE
+        return cls(nick, player_cell)
 
     def __repr__(self):
-        return '<{} nick={} pos={} radius={} color={}>'.format(
+        return '<{} nick={} score={}>'.format(
             self.__class__.__name__,
-            self._nick,
-            list(map(int, self._pos)),
-            int(self._radius),
-            self._color)
-    
+            self.nick,
+            int(self.score()))
