@@ -37,12 +37,15 @@ class View():
     HUD_PADDING = (3, 3)
     FONT_SIZE = 18
 
-    def __init__(self, width, height, model, player):
+    DEBUG_COLOR = (255, 0, 0)
+
+    def __init__(self, width, height, model, player, debug=False):
         self.width, self.height = width, height
         self.model = model
         self.player = player
+        self.debug = debug
         self.camera = Camera(0, 0, self.width, self.height)
-        self.fps = 24
+        self.fps = 30
         pygame.init()
         self.clock = pygame.time.Clock()
         self.screen = pygame.display.set_mode((self.width, self.height))
@@ -99,9 +102,11 @@ class View():
                 cell.BORDER_WIDTH)
 
     def draw_player(self, player):
+        """Draw passed player on the screen."""
         for cell in player.parts:
+            # draw player part
             self.draw_cell(cell)
-            # show nickname if obj is a Player
+            # draw nickname on top of the part
             self.draw_text(
                 self.screen,
                 player.nick,
@@ -185,27 +190,35 @@ class View():
             self.model.update()
             self.camera.set_center(self.player.center())
             self.redraw()
-            pygame.draw.circle(
-                self.screen, 
-                (255, 0, 0), 
-                self.camera.adjust(self.player.center()), 
-                5)
-            for cell in self.player.parts:
-                dx, dy = gu.polar_to_cartesian(cell.angle, cell.speed*100)
-                x, y = cell.pos
-                self.draw_vector(x, y, dx, dy)
+            if self.debug:
+                self.draw_debug_info()
             pygame.display.flip()
             self.clock.tick(self.fps)
 
-    def draw_vector(self, x, y, dx, dy):
+    def draw_debug_info(self):
+        """Draw debug information on the screen."""
+        # draw player center
+        pygame.draw.circle(
+            self.screen, 
+            self.DEBUG_COLOR,
+            self.camera.adjust(self.player.center()), 
+            5)
+        # draw velocity vectors of player parts
+        for cell in self.player.parts:
+            dx, dy = gu.polar_to_cartesian(cell.angle, cell.speed*100)
+            x, y = cell.pos
+            self.draw_vector(x, y, dx, dy, self.DEBUG_COLOR)
+
+    def draw_vector(self, x, y, dx, dy, color):
+        """Draw passed vector on the screen."""
         pygame.draw.line(
             self.screen,
-            (255, 0, 0),
+            color,
             self.camera.adjust([x, y]),
             self.camera.adjust([x+dx, y+dy]))
         pygame.draw.circle(
             self.screen,
-            (255, 0, 0),
+            color,
             self.camera.adjust([x+dx, y+dy]),
             3)
 
@@ -237,5 +250,5 @@ players = [
 ]
 m = Model(players, bounds)
 m.spawn_cells(cell_num)
-v = View(900, 600, m, p)
+v = View(900, 600, m, p, debug=True)
 v.start()

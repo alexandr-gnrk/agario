@@ -25,43 +25,32 @@ class Player(Victim, Killer):
         for i, cell in enumerate(self.parts):
             cell.move()
             for another_cell in self.parts[i + 1:]:
-                if cell != another_cell and cell.is_intersects(another_cell):
-                    if cell.split_timeout == 0 and \
-                            another_cell.split_timeout == 0:
-                        # print('ate', another_cell)
-                        cell.eat(another_cell)
-                        self.parts.remove(another_cell)
-                    else:
-                        cell.regurgitate_from(another_cell)
+                # cells shoud intersects and not be the same
+                if cell == another_cell or \
+                        not cell.is_intersects(another_cell):
+                    continue
 
-
-    # def update_velocity(self, angle, speed):
-    #     """Update velocity of each part."""
-    #     core_cell = self.biggest_part()
-    #     core_cell.update_velocity(angle, speed)
-    #     for cell in self.parts:
-    #         if cell != core_cell:
-    #             # get realtive velocity
-    #             # cell.update_velocity(angle, speed)
-    #             rel_angle, rel_speed = core_cell.velocity_relative_to(cell)
-    #             # print(gu.polar_to_cartesian(rel_angle, rel_speed))
-    #             print(rel_angle, rel_speed)
-    #             cell.update_velocity(rel_angle, rel_speed)
-    #             # cell.angle = rel_angle
-    #             # cell.speed = rel_speed
+                # merge cells if their timeout is zero
+                # otherwise get rid off colission between them
+                if cell.split_timeout == 0 and \
+                        another_cell.split_timeout == 0:
+                    cell.eat(another_cell)
+                    self.parts.remove(another_cell)
+                else:
+                    cell.regurgitate_from(another_cell)
 
     def update_velocity(self, angle, speed):
         """Update velocity of each part."""
         center_pos = self.center()
         for cell in self.parts:
-                # get realtive velocity
-                rel_vel = gu.velocity_relative_to_pos(
-                    center_pos,
-                    angle,
-                    speed,
-                    cell.pos)
-                # update velocity of cell
-                cell.update_velocity(*rel_vel)
+            # get realtive velocity
+            rel_vel = gu.velocity_relative_to_pos(
+                center_pos,
+                angle,
+                speed,
+                cell.pos)
+            # update velocity of cell
+            cell.update_velocity(*rel_vel)
 
     def shoot(self, angle):
         """Shoots with cells to given direction."""
@@ -82,7 +71,7 @@ class Player(Victim, Killer):
         return new_parts
 
     def center(self):
-        """Returns center median position of all player cells."""
+        """Returns median position of all player cells."""
         xsum = sum((cell.pos[0] for cell in self.parts))
         ysum = sum((cell.pos[1] for cell in self.parts))
         center = [
@@ -120,9 +109,6 @@ class Player(Victim, Killer):
             if killed_cell:
                 return killed_cell
         return None
-
-    def biggest_part(self):
-        return max(self.parts, key=lambda x: x.radius)
 
     def remove_part(self, cell):
         """Removes passed player cell from player parts list."""
