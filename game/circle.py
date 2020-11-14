@@ -13,7 +13,7 @@ class Circle():
     def distance_to(self, circle):
         """Returns distance to passed circle."""
         diff = tuple(map(sub, self.pos, circle.pos))
-        return math.sqrt(diff[0]**2 + diff[1]**2)
+        return math.hypot(*diff)
 
     def is_intersects(self, circle):
         """Returns True if circles intersects, otherwise False."""

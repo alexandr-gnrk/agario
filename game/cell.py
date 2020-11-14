@@ -1,5 +1,5 @@
 import random
-from operator import add
+from operator import add, sub
 
 from circle import Circle
 from victim import Victim
@@ -42,7 +42,7 @@ class Cell(Circle, Victim):
         # adding vectors
         v3 = list(map(add, v1, v2))
         # convert to polar
-        self.speed, self.angle = gu.cartesian_to_polar(*v3)
+        self.angle, self.speed = gu.cartesian_to_polar(*v3)
         # normilize speed coeff
         if self.speed > 1:
             self.speed = 1

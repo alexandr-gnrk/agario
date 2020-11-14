@@ -42,7 +42,7 @@ class View():
         self.model = model
         self.player = player
         self.camera = Camera(0, 0, self.width, self.height)
-        self.fps = 30
+        self.fps = 24
         pygame.init()
         self.clock = pygame.time.Clock()
         self.screen = pygame.display.set_mode((self.width, self.height))
@@ -174,20 +174,42 @@ class View():
                         self.model.shoot(
                             self.player,
                             self.mouse_pos_to_polar()[0])
-                    # elif event.key == pygame.K_SPACE:
-                    #     self.model.split(
-                    #         self.player,
-                    #         self.mouse_pos_to_polar()[0])
+                    elif event.key == pygame.K_SPACE:
+                        self.model.split(
+                            self.player,
+                            self.mouse_pos_to_polar()[0])
 
             # print(self)
+            print((self.mouse_pos_to_polar()))
             self.model.update_velocity(
                 self.player,
                 *(self.mouse_pos_to_polar()))
             self.model.update()
             self.camera.set_center(self.player.center())
             self.redraw()
+            pygame.draw.circle(
+                self.screen, 
+                (255, 0, 0), 
+                self.camera.adjust(self.player.center()), 
+                5)
+            for cell in self.player.parts:
+                dx, dy = gu.polar_to_cartesian(cell.angle, cell.speed*100)
+                x, y = cell.pos
+                self.draw_vector(x, y, dx, dy)
             pygame.display.flip()
             self.clock.tick(self.fps)
+
+    def draw_vector(self, x, y, dx, dy):
+        pygame.draw.line(
+            self.screen,
+            (255, 0, 0),
+            self.camera.adjust([x, y]),
+            self.camera.adjust([x+dx, y+dy]))
+        pygame.draw.circle(
+            self.screen,
+            (255, 0, 0),
+            self.camera.adjust([x+dx, y+dy]),
+            3)
 
     def mouse_pos_to_polar(self):
         """Convert mouse position to polar vector."""
@@ -201,14 +223,14 @@ class View():
         # setting radius of speed change zone
         speed_bound = 0.8*min(self.width/2, self.height/2)
         # normalize speed
-        speed = speed_bound if speed > speed_bound else speed/speed_bound
+        speed = 1 if speed >= speed_bound else speed/speed_bound
         return angle, speed
 
 
 bounds = [1000, 1000]
 cell_num = 100
 p = Player.make_random("Jetraid", bounds)
-p.parts[0].radius = 80
+p.parts[0].radius = 100
 players = [
     Player.make_random("Sobaka", bounds),
     Player.make_random("Kit", bounds),

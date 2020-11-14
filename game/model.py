@@ -25,13 +25,13 @@ class Model():
         else:
             logger.debug(f'{player} tried to shoot, but he can\'t')
 
-    # def split(self, player, angle):
-    #     """Shoots into given direction."""
-    #     if player.able_to_shoot():
-    #         cells = player.shoot(angle)
-    #         logger.debug(f'{player} shot')
-    #     else:
-    #         logger.debug(f'{player} tried to shoot, but he can\'t')
+    def split(self, player, angle):
+        """Splits player."""
+        new_parts = player.split(angle)
+        if new_parts:
+            logger.debug(f'{player} splitted')
+        else:
+            logger.debug(f'{player} tried to split, but he can\'t')
 
     def update(self):
         """Updates game state."""
@@ -49,6 +49,8 @@ class Model():
                     self.cells.remove(killed_cell)
 
             for another_player in self.players:
+                if player == another_player:
+                    continue
                 killed_cell = player.attempt_murder(another_player)
                 if killed_cell:
                     if len(another_player.parts) == 1:

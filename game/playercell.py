@@ -17,6 +17,9 @@ class PlayerCell(Cell, Killer):
     SHOOTCELL_COND_RADIUS = 40
     SHOOTCELL_RADIUS = 10
     SHOOTCELL_SPEED = Cell.MAX_SPEED
+
+    SPLITCELL_COND_RADIUS = 40
+    SPLITCELL_SPEED = MAX_SPEED
     # SHOOT_MIN_RADIUS = 40
 
     def __init__(self, pos, radius, color, angle=0, speed=0):
@@ -53,7 +56,7 @@ class PlayerCell(Cell, Killer):
         # change current cell radius
         self.spit_out(obj)
         # find diff_xy to move spawn cell on current circle border
-        diff_xy = gu.polar_to_cartesian(angle, self.radius)
+        diff_xy = gu.polar_to_cartesian(angle, self.radius + radius)
         # move created object
         obj.pos = list(map(add, self.pos, diff_xy))
         
@@ -72,4 +75,14 @@ class PlayerCell(Cell, Killer):
 
     def able_to_shoot(self):
         return self.able_to_emit(self.SHOOTCELL_COND_RADIUS)
+
+    def split(self, angle):
+        return self.emit(
+            angle, 
+            self.SPLITCELL_SPEED,
+            self.radius/math.sqrt(2),
+            PlayerCell)
+
+    def able_to_split(self):
+        return self.able_to_emit(self.SPLITCELL_COND_RADIUS)
 

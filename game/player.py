@@ -5,7 +5,7 @@ import math
 from victim import Victim
 from killer import Killer
 from playercell import PlayerCell
-# from gameutils import apply
+import gameutils as gu
 
 class Player(Victim, Killer):
     """Class that represents player game state."""
@@ -23,13 +23,63 @@ class Player(Victim, Killer):
     def move(self):
         """Move each part of player and check parts for collision."""
         for cell in self.parts:
-            # check for collisison
             cell.move()
+            for another_cell in self.parts:
+                if cell != another_cell and cell.is_intersects(another_cell):
+                    centers_vec = list(map(
+                        operator.sub,
+                        cell.pos,
+                        another_cell.pos))
+                    angle = gu.cartesian_to_polar(*centers_vec)[0]
+                    delta = cell.radius + another_cell.radius - cell.distance_to(another_cell)
+                    d_xy = gu.polar_to_cartesian(angle, delta)
+                    cell.pos = list(map(
+                        operator.add,
+                        cell.pos,
+                        d_xy))
+                    # corr_vec = list(map(
+                    #     operator.add,
+                    #     gu.polar_to_cartesian(cell.angle, cell.speed),
+                    #     gu.polar_to_cartesian(another_cell.angle, another_cell.speed)))
+                    # corr_vec = gu.cartesian_to_polar(*corr_vec)
+                    # corr_vec[1] *= cell.MAX_SPEED
+                    # corr_vec = gu.polar_to_cartesian(*corr_vec)
+                    # print("corr", gu.cartesian_to_polar(*corr_vec)[::-1])
+                    # cell.pos = list(map(
+                    #     operator.add,
+                    #     cell.pos,
+                    #     corr_vec))
+
+
+                            
+
+    # def update_velocity(self, angle, speed):
+    #     """Update velocity of each part."""
+    #     core_cell = self.biggest_part()
+    #     core_cell.update_velocity(angle, speed)
+    #     for cell in self.parts:
+    #         if cell != core_cell:
+    #             # get realtive velocity
+    #             # cell.update_velocity(angle, speed)
+    #             rel_angle, rel_speed = core_cell.velocity_relative_to(cell)
+    #             # print(gu.polar_to_cartesian(rel_angle, rel_speed))
+    #             print(rel_angle, rel_speed)
+    #             cell.update_velocity(rel_angle, rel_speed)
+    #             # cell.angle = rel_angle
+    #             # cell.speed = rel_speed
 
     def update_velocity(self, angle, speed):
         """Update velocity of each part."""
+        center_pos = self.center()
         for cell in self.parts:
-            cell.update_velocity(angle, speed)
+                # get realtive velocity
+                rel_vel = gu.velocity_relative_to_pos(
+                    center_pos,
+                    angle,
+                    speed,
+                    cell.pos)
+                # update velocity of cell
+                cell.update_velocity(*rel_vel)
 
     def shoot(self, angle):
         """Shoots with cells to given direction."""
@@ -40,14 +90,22 @@ class Player(Victim, Killer):
 
         return emmited
 
+    def split(self, angle):
+        new_parts = list()
+        for cell in self.parts:
+            if cell.able_to_split():
+                new_parts.append(cell.split(angle))
+
+        self.parts.extend(new_parts)
+        return new_parts
+
     def center(self):
         """Returns center median position of all player cells."""
-        pos_sum = functools.reduce(
-            operator.add,
-            (cell.pos for cell in self.parts))
+        xsum = sum((cell.pos[0] for cell in self.parts))
+        ysum = sum((cell.pos[1] for cell in self.parts))
         center = [
-            pos_sum[0]/len(self.parts),
-            pos_sum[1]/len(self.parts)]
+            xsum/len(self.parts),
+            ysum/len(self.parts)]
         return center
 
     def score(self):
@@ -80,6 +138,9 @@ class Player(Victim, Killer):
             if killed_cell:
                 return killed_cell
         return None
+
+    def biggest_part(self):
+        return max(self.parts, key=lambda x: x.radius)
 
     def remove_part(self, cell):
         """Removes passed player cell from player parts list."""
