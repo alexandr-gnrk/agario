@@ -22,9 +22,9 @@ class Player(Victim, Killer):
 
     def move(self):
         """Move each part of player and check parts for collision."""
-        for cell in self.parts:
+        for i, cell in enumerate(self.parts):
             cell.move()
-            for another_cell in self.parts:
+            for another_cell in self.parts[i + 1:]:
                 if cell != another_cell and cell.is_intersects(another_cell):
                     centers_vec = list(map(
                         operator.sub,

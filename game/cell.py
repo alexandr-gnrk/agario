@@ -10,7 +10,7 @@ class Cell(Circle, Victim):
     """Represents cell(food) state."""
 
     BORDER_WIDTH=0
-    FRICTION = 0.15
+    FRICTION = 0.1
     MAX_SPEED = 5
     SIZES = (5, 7, 10)
     SIZES_CUM = (70, 20, 10)

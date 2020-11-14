@@ -11,7 +11,7 @@ class PlayerCell(Cell, Killer):
     """Represents player cell(part of player) state."""
 
     BORDER_WIDTH = 5
-    MAX_SPEED = 10    
+    MAX_SPEED = 10
     SIZES = (5,)
     SIZES_CUM = (1,)
     SHOOTCELL_COND_RADIUS = 40
