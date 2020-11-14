@@ -37,6 +37,7 @@ class Cell(Circle, Victim):
     def update_velocity(self, angle, speed):
         """Add self velocity vector with passed velocity vector."""
         # convert to cartesian
+        before_speed = self.speed
         v1 = gu.polar_to_cartesian(angle, speed)
         v2 = gu.polar_to_cartesian(self.angle, self.speed)
         # adding vectors
@@ -44,8 +45,10 @@ class Cell(Circle, Victim):
         # convert to polar
         self.angle, self.speed = gu.cartesian_to_polar(*v3)
         # normilize speed coeff
-        if self.speed > 1:
+        if before_speed <= 1 and self.speed > 1:
             self.speed = 1
+        elif before_speed > 1 and self.speed > before_speed:
+            self.speed = before_speed
 
     def try_to_kill_by(self, killer):
         """Check is killer cell could eat current cell."""

@@ -1,6 +1,6 @@
 import math
 import enum 
-from operator import add
+from operator import add, sub
 
 # from victim import Victim
 from killer import Killer
@@ -19,19 +19,44 @@ class PlayerCell(Cell, Killer):
     SHOOTCELL_SPEED = Cell.MAX_SPEED
 
     SPLITCELL_COND_RADIUS = 40
-    SPLITCELL_SPEED = MAX_SPEED
+    SPLITCELL_SPEED = 3
+    SPLIT_TIMETOUT = 60
     # SHOOT_MIN_RADIUS = 40
 
     def __init__(self, pos, radius, color, angle=0, speed=0):
         super().__init__(pos, radius, color, angle, speed)
-    
-    # def can_eat(self, cell):
-    #     """Checks if current cell could eat passed cell."""
-    #     
+        # time after which it will be possible to connect to another cell
+        self.split_timeout = self.SPLIT_TIMETOUT
+        self.area_pool = 0
+
+    def move(self):
+        if self.split_timeout > 0:
+            self.split_timeout -= 1
+        self.__add_area(self.__area_pool_give_out())
+        super().move()
+
     def eat(self, cell):
         """Increase current cell area with passed cell area,
         by changing cell area."""
-        self.radius = math.sqrt((self.area() + cell.area()) / math.pi)
+        print('eating', cell)
+        self.area_pool += cell.area()
+        self.__add_area(self.__area_pool_give_out())
+        # print(f'{self.area_pool=}')
+        # # self.radius = math.sqrt((self.area() + cell.area()) / math.pi)
+
+    def __add_area(self, area):
+        """Increase current cell area with passed area."""
+        self.radius = math.sqrt((self.area() + area) / math.pi)
+
+    def __area_pool_give_out(self, part=0.1):
+        """Returns some part of food from area pool."""
+        if self.area_pool > 0:
+            area = self.area_pool * part
+            self.area_pool *= 1 - part
+        else:
+            area = 0
+        return area
+
 
     def spit_out(self, cell):
         """Decrease current cell area with passed cell area,
@@ -85,4 +110,25 @@ class PlayerCell(Cell, Killer):
 
     def able_to_split(self):
         return self.able_to_emit(self.SPLITCELL_COND_RADIUS)
+
+    def regurgitate_from(self, cell):
+        """Pushing current cell to edge of the passed cell.
+        It is necessary to get rid of the collision beetwen them.
+        """
+        # get vector that connects two centers, to detemine direction
+        centers_vec = list(map(
+            sub,
+            self.pos,
+            cell.pos))
+        # get angle of contact
+        angle = gu.cartesian_to_polar(*centers_vec)[0]
+        # intersection length
+        delta = self.radius + cell.radius - self.distance_to(cell)
+        # get delta in cartesian coordinate system
+        d_xy = gu.polar_to_cartesian(angle, delta)
+        # move current cell outside passed cell
+        self.pos = list(map(
+            add,
+            self.pos,
+            d_xy))
 

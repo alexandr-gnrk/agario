@@ -179,8 +179,6 @@ class View():
                             self.player,
                             self.mouse_pos_to_polar()[0])
 
-            # print(self)
-            print((self.mouse_pos_to_polar()))
             self.model.update_velocity(
                 self.player,
                 *(self.mouse_pos_to_polar()))
@@ -230,7 +228,7 @@ class View():
 bounds = [1000, 1000]
 cell_num = 100
 p = Player.make_random("Jetraid", bounds)
-p.parts[0].radius = 100
+p.parts[0].radius = 200
 players = [
     Player.make_random("Sobaka", bounds),
     Player.make_random("Kit", bounds),

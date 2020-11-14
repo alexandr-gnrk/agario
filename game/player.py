@@ -26,32 +26,14 @@ class Player(Victim, Killer):
             cell.move()
             for another_cell in self.parts[i + 1:]:
                 if cell != another_cell and cell.is_intersects(another_cell):
-                    centers_vec = list(map(
-                        operator.sub,
-                        cell.pos,
-                        another_cell.pos))
-                    angle = gu.cartesian_to_polar(*centers_vec)[0]
-                    delta = cell.radius + another_cell.radius - cell.distance_to(another_cell)
-                    d_xy = gu.polar_to_cartesian(angle, delta)
-                    cell.pos = list(map(
-                        operator.add,
-                        cell.pos,
-                        d_xy))
-                    # corr_vec = list(map(
-                    #     operator.add,
-                    #     gu.polar_to_cartesian(cell.angle, cell.speed),
-                    #     gu.polar_to_cartesian(another_cell.angle, another_cell.speed)))
-                    # corr_vec = gu.cartesian_to_polar(*corr_vec)
-                    # corr_vec[1] *= cell.MAX_SPEED
-                    # corr_vec = gu.polar_to_cartesian(*corr_vec)
-                    # print("corr", gu.cartesian_to_polar(*corr_vec)[::-1])
-                    # cell.pos = list(map(
-                    #     operator.add,
-                    #     cell.pos,
-                    #     corr_vec))
+                    if cell.split_timeout == 0 and \
+                            another_cell.split_timeout == 0:
+                        # print('ate', another_cell)
+                        cell.eat(another_cell)
+                        self.parts.remove(another_cell)
+                    else:
+                        cell.regurgitate_from(another_cell)
 
-
-                            
 
     # def update_velocity(self, angle, speed):
     #     """Update velocity of each part."""
