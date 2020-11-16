@@ -2,6 +2,7 @@ import math
 import random
 from operator import add, sub
 
+
 def polar_to_cartesian(angle, val):
     """Converts polar coord to cartesian."""
     return [val * math.cos(angle), val * math.sin(angle)]

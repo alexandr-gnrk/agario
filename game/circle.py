@@ -3,6 +3,7 @@ from operator import sub
 
 import gameutils as gu
 
+
 class Circle():
     """Class that describes circle figure."""
 

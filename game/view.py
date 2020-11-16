@@ -241,7 +241,7 @@ class View():
 bounds = [1000, 1000]
 cell_num = 100
 p = Player.make_random("Jetraid", bounds)
-p.parts[0].radius = 200
+p.parts[0].radius = 100
 players = [
     Player.make_random("Sobaka", bounds),
     Player.make_random("Kit", bounds),

@@ -56,7 +56,7 @@ class PlayerCell(Cell, Killer):
 
     def __add_area(self, area):
         """Increase current cell area with passed area."""
-        self.radius = math.sqrt((self.area() + area) / math.pi)
+        self.radius = math.sqrt((super().area() + area) / math.pi)
 
     def __area_pool_give_out(self, part=0.05):
         """Returns some part of food from area pool."""
@@ -71,7 +71,7 @@ class PlayerCell(Cell, Killer):
         """Decrease current cell area with passed cell area,
         by changing cell area.
         """
-        self.radius = math.sqrt((self.area() - cell.area()) / math.pi)
+        self.radius = math.sqrt((super().area() - cell.area()) / math.pi)
 
     def able_to_emit(self, cond_radius):
         """Checks if cell able to emmit."""
@@ -150,3 +150,6 @@ class PlayerCell(Cell, Killer):
             self.pos,
             d_xy))
 
+    def area(self):
+        """Returns full PlayerCell area, including area stored in pool."""
+        return super().area() + self.area_pool

@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+
 class Killer(ABC):
     """Interface of objects that could kill."""
 

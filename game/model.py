@@ -3,6 +3,7 @@ from loguru import logger
 from cell import Cell
 from player import Player
 
+
 class Model():
     """Class that represents game state."""
 
@@ -41,13 +42,15 @@ class Model():
         # update players
         for player in self.players:
             player.move()
-
+            
+            # check is player killed some cells
             for cell in self.cells:
                 killed_cell = player.attempt_murder(cell)
                 if killed_cell:
                     logger.debug(f'{player} ate {killed_cell}')
                     self.cells.remove(killed_cell)
-
+            
+            # check is player killed other players or their parts
             for another_player in self.players:
                 if player == another_player:
                     continue
