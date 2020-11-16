@@ -1,7 +1,6 @@
 from loguru import logger
 
-from cell import Cell
-from player import Player
+from .entities import Cell
 
 
 class Model():

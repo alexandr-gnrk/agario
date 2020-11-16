@@ -39,6 +39,7 @@ def random_pos(size):
     return [random.randint(-size[0], size[1]), 
         random.randint(-size[1], size[1])]
 
+
 def velocity_relative_to_pos(vec_pos, angle, speed, pos):
     """Returns new velocity that points in pos."""
     # get catesian vector
@@ -52,6 +53,7 @@ def velocity_relative_to_pos(vec_pos, angle, speed, pos):
     # normalize speed
     rel_vec[1] = speed
     return rel_vec
+
 
 def apply(iter_obj, func):
     """Apply given function to given sequence."""

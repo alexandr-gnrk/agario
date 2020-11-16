@@ -1,12 +1,12 @@
 import math
 
-from loguru import logger
 import pygame
 import pygame.gfxdraw
 
-from model import Model
-from player import Player
-import gameutils as gu
+from . import gameutils as gu
+from .model import Model
+from .entities import Player
+
 
 class Camera(object):
     """Class that converts cartesian pos to pixel pos on the screen."""
