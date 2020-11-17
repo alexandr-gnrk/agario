@@ -77,11 +77,11 @@ class UDPHandler(socketserver.BaseRequestHandler):
             socket.sendto(data, self.client_address)
 
 
-def start_server(host='localhost', port=9999):
+def start(host='localhost', port=9999):
     with socketserver.UDPServer((host, port), UDPHandler) as server:
         logger.info('Server started at {}:{}'.format(host, port))
         server.serve_forever()
 
 
 if __name__ == '__main__':
-    start_server()
+    start()

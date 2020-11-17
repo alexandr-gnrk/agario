@@ -81,7 +81,7 @@ class GameConnection():
             logger.error('Server not responding')
 
 
-def start_client(width=900, height=600):
+def start(width=900, height=600):
     socket.setdefaulttimeout(2)
 
     # pygame initialization
@@ -117,4 +117,4 @@ def start_client(width=900, height=600):
 
 
 if __name__ == '__main__':
-    start_client()
+    start()
