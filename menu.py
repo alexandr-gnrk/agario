@@ -96,8 +96,7 @@ class MyMenu():
             # lobby_menu) 
             partial(
                 connect_callback, 
-                self.start_menu.get_input_data()['nick'],
-                self.start_menu.get_input_data()['addr']))
+                self.start_menu.get_input_data))
         self.start_menu.add_button('Back', pygame_menu.events.RESET)
 
     def get_main_menu(self):

@@ -12,7 +12,6 @@ from msgtype import MsgType
 
 
 WIDTH, HEIGHT = 900, 600
-#WIDTH, HEIGHT = 450, 300
 BACKGROUND_COLOR = (24, 26, 50)
 BACKGROUND_COLOR = (40, 0, 40)
 
@@ -26,9 +25,11 @@ class Game():
         self.port = None
         self.addr_string = None
 
-    def connect_to_game(self, nick, addr_string):
-        self.addr_string = addr_string
-        self.host, self.port = addr_string.split(':')
+    def connect_to_game(self, get_attrs):
+        attrs = get_attrs()
+        self.addr_string = attrs['addr']
+        nick = attrs['nick']
+        self.host, self.port = self.addr_string.split(':')
         self.port = int(self.port)
 
 
