@@ -83,7 +83,6 @@ class GameConnection():
 
 
 
-
 socket.setdefaulttimeout(2)
 
 # pygame initialization
