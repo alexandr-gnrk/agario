@@ -6,12 +6,11 @@ import time
 import pygame
 from loguru import logger
 
-from menu import MyMenu
-from game import View
-from msgtype import MsgType
+from .menu import MyMenu
+from .msgtype import MsgType
+from .. import View
 
 
-WIDTH, HEIGHT = 900, 600
 BACKGROUND_COLOR = (24, 26, 50)
 BACKGROUND_COLOR = (40, 0, 40)
 
@@ -82,36 +81,40 @@ class GameConnection():
             logger.error('Server not responding')
 
 
+def start_client(width=900, height=600):
+    socket.setdefaulttimeout(2)
 
-socket.setdefaulttimeout(2)
+    # pygame initialization
+    pygame.init()
+    screen = pygame.display.set_mode((width, height))
+    pygame.display.set_caption('agar.io')
+    icon = pygame.image.load('./img/logo.png')
+    pygame.display.set_icon(icon)
 
-# pygame initialization
-pygame.init()
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption('agar.io')
-icon = pygame.image.load('./img/logo.png')
-pygame.display.set_icon(icon)
+    # init class with game connection
+    gameconn = GameConnection(screen)
+    # create menu
+    menu = MyMenu(width*0.9, height*0.9)
+    # bind connection method to menu button
+    menu.update_start_menu(gameconn.connect_to_game)
+    FPS = 30
+    clock = pygame.time.Clock()
 
-# init class with game connection
-gameconn = GameConnection(screen)
-# create menu
-menu = MyMenu(WIDTH*0.9, HEIGHT*0.9)
-# bind connection method to menu button
-menu.update_start_menu(gameconn.connect_to_game)
-FPS = 30
-clock = pygame.time.Clock()
+    # start pygame loop
+    while True:
+        events = pygame.event.get()
+        for event in events:
+            if event.type == pygame.QUIT:
+                exit()
+        
+        screen.fill(BACKGROUND_COLOR)
+        
+        if menu.get_main_menu().is_enabled():
+            menu.get_main_menu().draw(screen)
+        menu.get_main_menu().update(events)
+        pygame.display.flip()
+        clock.tick(FPS)
 
-# start pygame loop
-while True:
-    events = pygame.event.get()
-    for event in events:
-        if event.type == pygame.QUIT:
-            exit()
-    
-    screen.fill(BACKGROUND_COLOR)
-    
-    if menu.get_main_menu().is_enabled():
-        menu.get_main_menu().draw(screen)
-    menu.get_main_menu().update(events)
-    pygame.display.flip()
-    clock.tick(FPS)
+
+if __name__ == '__main__':
+    start_client()

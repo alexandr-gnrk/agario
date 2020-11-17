@@ -4,21 +4,20 @@ import pickle
 from loguru import logger
 import pygame
 
-from game import Model
-from game.entities import Player
-from msgtype import MsgType
+from .msgtype import MsgType
+from .. import Model
+from ..entities import Player
 
 
 bounds = [1000, 1000]
-cell_num = 100
-players = list()
-model = Model(players, bounds)
+cell_num = 150
+model = Model(list(), bounds)
 model.spawn_cells(cell_num)
-last_id = 0
 
 clients = dict()
 
 p = Player.make_random("Jetraid", bounds)
+
 
 class UDPHandler(socketserver.BaseRequestHandler):
     def handle(self):
@@ -78,7 +77,11 @@ class UDPHandler(socketserver.BaseRequestHandler):
             socket.sendto(data, self.client_address)
 
 
-HOST, PORT = 'localhost', 9999
-with socketserver.UDPServer((HOST, PORT), UDPHandler) as server:
-    logger.info('Server started at {}:{}'.format(HOST, PORT))
-    server.serve_forever()
+def start_server(host='localhost', port=9999):
+    with socketserver.UDPServer((host, port), UDPHandler) as server:
+        logger.info('Server started at {}:{}'.format(host, port))
+        server.serve_forever()
+
+
+if __name__ == '__main__':
+    start_server()
