@@ -6,9 +6,10 @@ import pygame_menu
 class MyMenu():
     MENU_VERTICAL_MARGIN = 25
     HELP = (
-        '*Some useful information*',
-        '*Another useful information*',
-        '*Press smth to kill me*')
+        'Control keys',
+        '',
+        'Press "W" key to shoot',
+        'Press "Space" to split into two parts')
     ABOUT = (
         'Python implementation of game agar.io',
         'Authors: @alexandr-gnrk & @vanyabondar',
