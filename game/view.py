@@ -39,14 +39,14 @@ class View():
 
     DEBUG_COLOR = (255, 0, 0)
 
-    def __init__(self, width, height, model, player, debug=False):
-        self.width, self.height = width, height
+    def __init__(self, screen, model, player, debug=False):
+        self.screen = screen
+        self.width, self.height = self.screen.get_size()
         self.model = model
         self.player = player
         self.debug = debug
         self.camera = Camera(0, 0, self.width, self.height)
         self.fps = 30
-        pygame.init()
         self.clock = pygame.time.Clock()
         self.screen = pygame.display.set_mode((self.width, self.height))
         self.hud_surface = pygame.Surface((1, 1), pygame.SRCALPHA)
@@ -55,6 +55,7 @@ class View():
 
     def redraw(self):
         """Redraw screen according to model of game."""
+        self.camera.set_center(self.player.center())
         self.screen.fill(View.BACKGROUND_COLOR)
         self.draw_grid()
         for cell in self.model.cells:
@@ -63,6 +64,9 @@ class View():
             self.draw_player(player)
         # self.draw_object(self.model.player)
         self.draw_hud((8, 5))
+        if self.debug:
+            self.draw_debug_info()
+        pygame.display.flip()
 
     def draw_grid(self, step=25):
         """Draw grid on screen with passed step."""
@@ -188,11 +192,7 @@ class View():
                 self.player,
                 *(self.mouse_pos_to_polar()))
             self.model.update()
-            self.camera.set_center(self.player.center())
             self.redraw()
-            if self.debug:
-                self.draw_debug_info()
-            pygame.display.flip()
             self.clock.tick(self.fps)
 
     def draw_debug_info(self):
@@ -237,18 +237,23 @@ class View():
         speed = 1 if speed >= speed_bound else speed/speed_bound
         return angle, speed
 
+if __name__ == '__main__':
+    bounds = [1000, 1000]
+    cell_num = 100
+    
+    p = Player.make_random("Jetraid", bounds)
+    p.parts[0].radius = 100
+    players = [
+        Player.make_random("Sobaka", bounds),
+        Player.make_random("Kit", bounds),
+        Player.make_random("elohssa", bounds),
+        p,
+    ]
+    m = Model(players, bounds)
+    m.spawn_cells(cell_num)
 
-bounds = [1000, 1000]
-cell_num = 100
-p = Player.make_random("Jetraid", bounds)
-p.parts[0].radius = 100
-players = [
-    Player.make_random("Sobaka", bounds),
-    Player.make_random("Kit", bounds),
-    Player.make_random("elohssa", bounds),
-    p,
-]
-m = Model(players, bounds)
-m.spawn_cells(cell_num)
-v = View(900, 600, m, p, debug=True)
-v.start()
+    pygame.init()
+    screen = pygame.display.set_mode((900, 600))
+
+    v = View(screen, m, p, debug=True)
+    v.start()
