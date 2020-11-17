@@ -35,20 +35,27 @@ class UDPHandler(socketserver.BaseRequestHandler):
             nick = data
             logger.debug('Recieved {!r} from {}'.format(nick, self.client_address))
             
+            # make new player with recievd nickname
             new_player = Player.make_random(nick, bounds)
 
+            # sending created player to client
             data = pickle.dumps(new_player)
             logger.debug('Sending {!r} to {}'.format(data, self.client_address))
             socket = self.request[1]
             socket.sendto(data, self.client_address)
 
+            # add client to list of clients
             clients[self.client_address] = new_player
+            # add player to game model
             model.players.append(new_player)
         elif msgtype == MsgType.UPDATE:
             mouse_pos = data['mouse_pos']
             keys = data['keys']
+
+            # define player according to client address
             player = clients[self.client_address]
 
+            # simulate player actions
             for key in keys:
                 if key == pygame.K_w:
                     model.shoot(
@@ -58,51 +65,18 @@ class UDPHandler(socketserver.BaseRequestHandler):
                     model.split(
                         player,
                         mouse_pos[0])
+            # update player velocity and update model state
             model.update_velocity(player, *mouse_pos)
             model.update()
 
+            # send player state and game model state to client
             data = pickle.dumps({
                 'player': player,
                 'model': model
             })
             socket = self.request[1]
             socket.sendto(data, self.client_address)
-            
 
-    def connect_player(self, message):
-        # making new player
-        global last_id
-        global players
-        last_id += 1
-        new_player = pb.Player()
-        new_player.id = last_id
-        new_player.nick = message.nick
-        new_player.status = pb.LobbyStatus.NOT_READY
-        players.append(new_player)
-        print(players)
-
-        # response to the client with new player
-        socket = self.request[1]
-        data = new_player.SerializeToString()
-        logger.debug('Sending {} to {}'.format(data, self.client_address))
-        socket.sendto(data, self.client_address)
-
-    def update_lobby(self, message):
-        global players
-        print(players)
-        lobby = pb.Lobby()
-        for player in players:
-            player_pb = lobby.players.add()
-            player_pb = player
-
-        print(lobby)
-
-        # response to the client with lobby
-        socket = self.request[1]
-        data = lobby.SerializeToString()
-        print(data)
-        logger.debug('Sending {} to {}'.format(data, self.client_address))
-        socket.sendto(data, self.client_address)
 
 HOST, PORT = 'localhost', 9999
 with socketserver.UDPServer((HOST, PORT), UDPHandler) as server:

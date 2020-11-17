@@ -94,7 +94,6 @@ class MyMenu():
         self.start_menu.add_vertical_margin(MyMenu.MENU_VERTICAL_MARGIN)
         self.start_menu.add_button(
             'Connect',
-            # lobby_menu) 
             partial(
                 connect_callback, 
                 self.start_menu.get_input_data))

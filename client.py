@@ -16,7 +16,7 @@ BACKGROUND_COLOR = (24, 26, 50)
 BACKGROUND_COLOR = (40, 0, 40)
 
 
-class Game():
+class GameConnection():
     def __init__(self, screen):
         self.screen = screen
         self.player = None
@@ -32,32 +32,34 @@ class Game():
         self.host, self.port = self.addr_string.split(':')
         self.port = int(self.port)
 
-
         try:
-            # making protobuf message
+            # send nickname
             msg = pickle.dumps({
                 'type': MsgType.CONNECT,
                 'data': nick
                 })
-            # sending connect request to server
             sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             sock.sendto(msg, (self.host, self.port))
             logger.debug('Sending {} to {}'.format(msg, self.addr_string))
 
-            # getting player info from server
+            # recieving player info
             data = sock.recv(4096)
             self.player = pickle.loads(data)
             logger.debug('Recieved {!r} from {}'.format(self.player, self.addr_string))
             
+            # create view to display game
             view = View(self.screen, None, self.player)
             while True:
+                # getting list of pressed buttons
                 keys = list()
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         exit()
                     elif event.type == pygame.KEYDOWN:
                         keys.append(event.key)
+                # get mouse position (velocity vector)
                 mouse_pos = view.mouse_pos_to_polar()
+                # sending velocity vector and list of pressed keys
                 msg = pickle.dumps({
                     'type': MsgType.UPDATE,
                     'data': {
@@ -66,15 +68,16 @@ class Game():
                         },
                     })
                 sock.sendto(msg, (self.host, self.port))
+
+                # getting current player and game model state
                 data = sock.recv(2**16)
                 msg = pickle.loads(data)
+
+                # update view and redraw
                 view.player = msg['player']
                 view.model = msg['model']
                 view.redraw()
                 time.sleep(1/40)
-
-
-
         except socket.timeout:
             logger.error('Server not responding')
 
@@ -87,29 +90,29 @@ socket.setdefaulttimeout(2)
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption('agar.io')
-# icon = pygame.image.load('./src/logo.png')
-# pygame.display.set_icon(icon)
+icon = pygame.image.load('./img/logo.png')
+pygame.display.set_icon(icon)
 
-game = Game(screen)
+# init class with game connection
+gameconn = GameConnection(screen)
+# create menu
 menu = MyMenu(WIDTH*0.9, HEIGHT*0.9)
-menu.update_start_menu(game.connect_to_game)
+# bind connection method to menu button
+menu.update_start_menu(gameconn.connect_to_game)
 FPS = 30
 clock = pygame.time.Clock()
+
+# start pygame loop
 while True:
     events = pygame.event.get()
     for event in events:
         if event.type == pygame.QUIT:
             exit()
-        # elif event.type == pygame.KEYDOWN:
-        #     if event.key == pygame.K_ESCAPE:
-        #         main_menu.toggle()
     
     screen.fill(BACKGROUND_COLOR)
     
-    # game.update()
     if menu.get_main_menu().is_enabled():
         menu.get_main_menu().draw(screen)
-
     menu.get_main_menu().update(events)
     pygame.display.flip()
     clock.tick(FPS)
