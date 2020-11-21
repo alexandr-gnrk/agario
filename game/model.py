@@ -17,7 +17,7 @@ class Model():
             self.cells = cells
 
     # duration of round in seconds
-    ROUND_DURATION = 20
+    ROUND_DURATION = 240
 
     def __init__(self, players=None, cells=None, bounds=(1000, 1000), chunk_size=1000):
         players = list() if players is None else players
