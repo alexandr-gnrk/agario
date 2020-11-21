@@ -38,7 +38,7 @@ class UDPHandler(socketserver.BaseRequestHandler):
             new_player = Player.make_random(nick, bounds)
 
             # sending created player to client
-            data = pickle.dumps(new_player)
+            data = pickle.dumps(new_player.id)
             logger.debug('Sending {!r} to {}'.format(data, self.client_address))
             socket = self.request[1]
             socket.sendto(data, self.client_address)
@@ -69,10 +69,7 @@ class UDPHandler(socketserver.BaseRequestHandler):
             model.update()
 
             # send player state and game model state to client
-            data = pickle.dumps({
-                'player': player,
-                'model': model.copy_for_client(player.center())
-            })
+            data = pickle.dumps(model.copy_for_client(player.center()))
             socket = self.request[1]
             socket.sendto(data, self.client_address)
 

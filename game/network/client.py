@@ -18,7 +18,7 @@ BACKGROUND_COLOR = (40, 0, 40)
 class GameConnection():
     def __init__(self, screen):
         self.screen = screen
-        self.player = None
+        self.player_id = None
         self.is_in_lobby = False
         self.host = None
         self.port = None
@@ -43,11 +43,11 @@ class GameConnection():
 
             # recieving player info
             data = sock.recv(4096)
-            self.player = pickle.loads(data)
-            logger.debug('Recieved {!r} from {}'.format(self.player, self.addr_string))
+            self.player_id = pickle.loads(data)
+            logger.debug('Recieved {!r} from {}'.format(self.player_id, self.addr_string))
             
             # create view to display game
-            view = View(self.screen, None, self.player)
+            view = View(self.screen, None, None)
             while True:
                 # getting list of pressed buttons
                 keys = list()
@@ -73,8 +73,12 @@ class GameConnection():
                 msg = pickle.loads(data)
 
                 # update view and redraw
-                view.player = msg['player']
-                view.model = msg['model']
+                view.model = msg
+                for pl in view.model.players:
+                    if pl.id == self.player_id:
+                        view.player = pl
+                        break
+
                 view.redraw()
                 time.sleep(1/40)
         except socket.timeout:

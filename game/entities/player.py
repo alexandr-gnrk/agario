@@ -14,7 +14,10 @@ class Player(interfaces.Victim, interfaces.Killer):
     START_SIZE = 40
     BORDER_WIDTH = 5
 
+    LAST_ID = -1
+
     def __init__(self, nick, player_cell):
+        self.id = self.new_id()
         self.nick = nick
         # cells of which player consists
         self.parts = [player_cell]
@@ -109,6 +112,11 @@ class Player(interfaces.Victim, interfaces.Killer):
             if killed_cell:
                 return killed_cell
         return None
+
+    @classmethod
+    def new_id(cls):
+        cls.LAST_ID += 1
+        return cls.LAST_ID
 
     def remove_part(self, cell):
         """Removes passed player cell from player parts list."""
