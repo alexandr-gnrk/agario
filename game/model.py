@@ -26,9 +26,9 @@ class Model():
         self.bounds = bounds
         self.chunk_size = chunk_size
         self.chunks = list()
-        for i in range((self.bounds[0] * 2) // chunk_size):
+        for i in range((self.bounds[0] * 2) // chunk_size + 1):
             self.chunks.append(list())
-            for j in range((self.bounds[1] * 2) // chunk_size):
+            for j in range((self.bounds[1] * 2) // chunk_size + 1):
                 self.chunks[-1].append(self.Chunk())
 
         for player in players:
@@ -75,6 +75,7 @@ class Model():
         for cell in self.cells:
             self.remove_cell(cell)
             cell.move()
+            self.bound_cell(cell)
             self.add_cell(cell)
 
         # update players
@@ -82,6 +83,7 @@ class Model():
         for player in observable_players:
             self.remove_player(player)
             player.move()
+            self.bound_player(player)
             self.add_player(player)
 
             # get chuncks around player
@@ -119,6 +121,17 @@ class Model():
         """Spawn passed amount of cells on the field."""
         for _ in range(amount):
             self.add_cell(Cell.make_random(self.bounds))
+
+    def bound_cell(self, cell):
+        cell.pos[0] = self.bounds[0] if cell.pos[0] > self.bounds[0] else cell.pos[0]
+        cell.pos[0] = -self.bounds[0] if cell.pos[0] < -self.bounds[0] else cell.pos[0]
+
+        cell.pos[1] = self.bounds[1] if cell.pos[1] > self.bounds[1] else cell.pos[1]
+        cell.pos[1] = -self.bounds[1] if cell.pos[1] < -self.bounds[1] else cell.pos[1]
+
+    def bound_player(self, player):
+        for cell in player.parts:
+            self.bound_cell(cell)
 
     def add_player(self, player):
         self.__pos_to_chunk(player.center()).players.append(player)
