@@ -73,11 +73,16 @@ class GameConnection():
                 msg = pickle.loads(data)
 
                 # update view and redraw
+                view.player = None
                 view.model = msg
                 for pl in view.model.players:
                     if pl.id == self.player_id:
                         view.player = pl
                         break
+
+                if view.player is None:
+                    logger.debug("Player was killed!")
+                    return
 
                 view.redraw()
                 time.sleep(1/40)
