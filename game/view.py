@@ -1,4 +1,5 @@
 import math
+import time
 
 import pygame
 import pygame.gfxdraw
@@ -33,9 +34,11 @@ class View():
     TEXT_COLOR = (50, 50, 50)
     HUD_BACGROUND_COLOR = (50,50,50,80)
     BACKGROUND_COLOR = (242, 251, 255)
+    MESSAGE_COLOR = (255, 0, 0)
     GRID_COLOR = (226, 234, 238)
     HUD_PADDING = (3, 3)
     FONT_SIZE = 18
+    MESSAGE_EXPIRE_TIME = 5
 
     DEBUG_COLOR = (255, 0, 0)
 
@@ -66,7 +69,17 @@ class View():
         self.draw_hud((8, 5))
         if self.debug:
             self.draw_debug_info()
+        self.draw_messages()
         pygame.display.flip()
+
+    def draw_messages(self):
+        if time.time() - self.model.round_start <= self.MESSAGE_EXPIRE_TIME:
+            self.draw_text(
+                self.screen,
+                "New round started!",
+                [self.width // 2, self.height // 2 * 0.1],
+                self.MESSAGE_COLOR,
+                align_center=True)  
 
     def draw_grid(self, step=25):
         """Draw grid on screen with passed step."""

@@ -1,4 +1,5 @@
 import itertools
+import time
 
 from loguru import logger
 
@@ -15,10 +16,13 @@ class Model():
             self.players = players
             self.cells = cells
 
+    # duration of round in seconds
+    ROUND_DURATION = 20
+
     def __init__(self, players=None, cells=None, bounds=(1000, 1000), chunk_size=1000):
-        # means that size of world is [-world_size, world_size]
         players = list() if players is None else players
         cells = list() if cells is None else cells
+        # means that size of world is [-world_size, world_size]
         self.bounds = bounds
         self.chunk_size = chunk_size
         self.chunks = list()
@@ -31,8 +35,8 @@ class Model():
             self.add_player(player)
         for cell in cells:
             self.add_cell(cell)
-        # self.players = players
-        # self.cells = list()
+
+        self.round_start = time.time()
 
     def update_velocity(self, player, angle, speed):
         """Update passed player velocity."""
@@ -62,6 +66,11 @@ class Model():
 
     def update(self):
         """Updates game state."""
+        if time.time() - self.round_start >= self.ROUND_DURATION:
+            logger.debug('New round was started.')
+            self.__reset_players()
+            self.round_start = time.time()
+
         # update cells
         for cell in self.cells:
             self.remove_cell(cell)
@@ -131,8 +140,13 @@ class Model():
             players.extend(chunk.players)
             cells.extend(chunk.cells)
 
-        return Model(players, cells, self.bounds, self.chunk_size)
+        model = Model(players, cells, self.bounds, self.chunk_size)
+        model.round_start = self.round_start
+        return model
 
+    def __reset_players(self):
+        for player in self.players:
+            player.reset()
 
     def __pos_to_chunk(self, pos):
         chunk_pos = self.__chunk_pos(pos)

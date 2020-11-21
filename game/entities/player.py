@@ -114,6 +114,11 @@ class Player(interfaces.Victim, interfaces.Killer):
         """Removes passed player cell from player parts list."""
         self.parts.remove(cell)
 
+    def reset(self):
+        self.parts = self.parts[:1]
+        self.parts[0].area_pool = 0
+        self.parts[0].radius = self.START_SIZE
+
     @classmethod
     def make_random(cls, nick, bounds):
         """Returns random player with given nick."""
