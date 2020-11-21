@@ -11,7 +11,7 @@ from ..entities import Player
 
 bounds = [1000, 1000]
 cell_num = 150
-model = Model(list(), bounds)
+model = Model(list(), bounds=bounds)
 model.spawn_cells(cell_num)
 
 clients = dict()
@@ -46,7 +46,7 @@ class UDPHandler(socketserver.BaseRequestHandler):
             # add client to list of clients
             clients[self.client_address] = new_player
             # add player to game model
-            model.players.append(new_player)
+            model.add_player(new_player)
         elif msgtype == MsgType.UPDATE:
             mouse_pos = data['mouse_pos']
             keys = data['keys']
@@ -71,7 +71,7 @@ class UDPHandler(socketserver.BaseRequestHandler):
             # send player state and game model state to client
             data = pickle.dumps({
                 'player': player,
-                'model': model
+                'model': model.copy_for_client(player.center())
             })
             socket = self.request[1]
             socket.sendto(data, self.client_address)

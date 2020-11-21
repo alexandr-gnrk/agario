@@ -249,7 +249,7 @@ if __name__ == '__main__':
         Player.make_random("elohssa", bounds),
         p,
     ]
-    m = Model(players, bounds)
+    m = Model(players, bounds=bounds)
     m.spawn_cells(cell_num)
 
     pygame.init()
