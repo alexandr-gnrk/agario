@@ -11,7 +11,7 @@ This is multiplayer python implementation of game [agar.io](https://en.wikipedia
 
 
 
-Features:
+## Features
 - [x] Full game loop
 - [x] HUD with score and top players
 - [x] Splitting by "Space" key
