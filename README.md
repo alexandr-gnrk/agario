@@ -9,6 +9,17 @@ This is multiplayer python implementation of game [agar.io](https://en.wikipedia
 - [socket](https://docs.python.org/3/library/socket.html)
 - [loguru](https://github.com/Delgan/loguru)
 
+
+
+Features:
+- [x] Full game loop
+- [x] HUD with score and top players
+- [x] Splitting by "Space" key
+- [x] Shooting by "W" key
+- [x] Players receive information only about the nearest chunks
+- [x] Communication between the client and the server occurs via sockets
+
+
 ## Setup
 Clone the repository and change the working directory:
 
