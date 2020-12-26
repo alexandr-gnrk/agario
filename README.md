@@ -2,6 +2,9 @@
 # agar.io
 This is multiplayer python implementation of game [agar.io](https://en.wikipedia.org/wiki/Agar.io).
 
+![Game demo](./screenshots/agario_demo.gif)
+
+
 ## Stack
 - Python3
 - [PyGame](https://www.pygame.org/)
