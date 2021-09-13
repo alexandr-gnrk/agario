@@ -31,7 +31,7 @@ args = parser.parse_args()
 
 if args.server:
     import game.network.server as server
-    server.start(port=args.port)
+    server.start(host='0.0.0.0', port=args.port)
 else:
     import game.network.client as client
     client.start(args.width, args.height)
